@@ -1,3 +1,4 @@
+# coding=utf-8
 class HTMLrender:
     
     table = []
@@ -21,8 +22,33 @@ class HTMLrender:
         print '    </tr>'
         for act in self.table:
             print '    <tr>' 
-            for val in act:
-                print '      <td>'+val+'</td>'
+            print '      <td>'
+            print act['name']
+            print '      </td>'
+            print '      <td>'
+            print act['date']
+            print '      </td>'
+            print '      <td>'
+            print act['loc']['spotName']
+            print '      </td>'
+            print '      <td>'
+            print act['loc']['street']
+            print '      </td>'
+            print '      <td>'
+            print act['loc']['streetNum']
+            print '      </td>'
+            print '      <td>'
+            print act['loc']['district']
+            print '      </td>'
+            print '      <td>'
+            print act['loc']['city']
+            print '      </td>'
+            print '      <td>'
+            print act['loc']['area']
+            print '      </td>'
+            print '      <td>'
+            print act['loc']['pstCode']
+            print '      </td>'
             print '    </tr>'
         print '</table>'
         print '</body>'
