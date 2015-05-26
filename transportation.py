@@ -5,12 +5,13 @@ import re
 class Transportation
     
     def __init__(self, lon, lat):
+
         def haversineDistance(x,y,xx,yy):
             x, y, xx, yy = map(radians, [x, y, xx, yy])
             lon = x - xx 
             lat = y - yy 
             aux = sin(lat/2)**2 + cos(x) * cos(y) * sin(lon/2)**2
-            return 2 * asin(sqrt(aux)) * 6371 # Earth radium in Km
+            return 2 * asin(sqrt(aux)) * 6371000 # Earth radium in Km
 
         day_buses = []
         night_buses = []
@@ -38,8 +39,8 @@ class Transportation
         reader = csv.reader(ifile, delimiter='\t')
         for stat in reader:
             dist = haversineDistance(lon,lat,stat[4],stat[5])
-            if dist <= 0.5:
-                st['dist'] = dist
+            if dist <= 500:
+                st['dist'] = str('%.2f' % dist)
                 st['metros'] = stat[6]
                 st['lon'] = stat[4]
                 st['lon'] = stat[5]
@@ -49,3 +50,4 @@ class Transportation
         sorted(day_buses, key=lambda s: s['dist'])[0:9] 
         sorted(night_buses, key=lambda s: s['dist'])[0:9] 
         sorted(metro, key=lambda s: s['dist'])[0:9]
+        self.TMBStations = day_buses

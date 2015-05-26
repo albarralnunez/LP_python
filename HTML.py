@@ -14,7 +14,27 @@ class HTMLrender:
         if (type(text) == unicode):
                 text = unicodedata.normalize('NFKD', text).encode('ascii','ignore')
         return text
-    
+
+    def  __printBikesStations(self, bikes):
+        for bike in bikes:
+            print '      <li>'
+            print '      <li>'
+            print self.__normaliza(bike['street'])
+            print '      </li>'
+            print '      <li>'
+            print self.__normaliza(bike['streetNumber'])
+            print '      </li>'
+            print '      <li>'
+            print self.__normaliza(bike['bikes'])
+            print '      </li>'
+            print '      <li>'
+            print self.__normaliza(bike['slots'])
+            print '      </li>'
+            print '      <li>'
+            print self.__normaliza(bike['dist'])
+            print '      </li>'
+            print '      </li>'
+
     def printHTML(self, activities):
         
         print '<!doctype html>'
@@ -67,12 +87,12 @@ class HTMLrender:
             print '      <td>'
             print self.__normaliza(act['loc']['pstCode'])
             print '      </td>'
-            #print '      <td>'
-            #printBikesStations()
-            #print '      </td>
+            print '      <td>'
+            self.__printBikesStations(act['bikeStations'])
+            print '      </td>'
             #print '      <td>'
             #printMTStations()
-            #print '      </td>
+            #print '      </td>'
             print '    </tr>'
         print '</table>'
         print '</body>'
