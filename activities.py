@@ -1,6 +1,9 @@
 # coding=utf-8
 import ast
 import xml.etree.ElementTree as ET
+import time
+import urllib
+import unicodedata
 
 class Activities:
     
@@ -18,30 +21,68 @@ class Activities:
         coo.x
         coo.y
     '''
+    def __normaliza(self, text):
+        if (type(text) == unicode):
+                text = unicodedata.normalize('NFKD', text).encode('ascii','ignore')
+        return text
 
     def __init__(self, queryStr):
-
-        def findActivities(activitiesLst, queryLst):
-            if queryLst:
-                if type(queryLst) is str:
-                    xpath = ".//*[nom='"+queryLst+"']"
-                    activitiesLstAux = \
-                        filter(lambda x: x.findall(xpath), activitiesLst)
-                    xpath = ".//*[barri='"+queryLst+"']"
-                    activitiesLstAux += \
-                        filter(lambda x: x.findall(xpath), activitiesLst)
-                    return activitiesLstAux
-                if type(queryLst) is list:
-                    aux = map(
-                        lambda x: findActivities(activitiesLst, x), 
-                        queryLst
-                    )
-                    return [item for sublist in aux for item in sublist]
-                if type(queryLst) is tuple:
-                    aux = findActivities(activitiesLst, queryLst[0]) 
-                    return findActivities(aux, queryLst[1:])
-            return activitiesLst
         
+        def checkActivity(queryLst, activity):
+            nom_act = activity.find("./nom").text
+            barri = activity.find("./lloc_simple/adreca_simple/barri").text 
+            if barri is None:
+                barri = "Ningun"
+            nom_lloc = activity.find("./lloc_simple/nom").text
+            #print "</br>"
+            #print self.__normaliza(queryLst).lower() + " ->"
+            #print self.__normaliza(barri).lower()
+            #print "</br>"
+            if self.__normaliza(queryLst).lower() in  \
+                (self.__normaliza(nom_act).lower() + \
+                self.__normaliza(barri).lower() + \
+                self.__normaliza(nom_lloc).lower()):
+                    return True
+            return False
+
+        def findActivities(activity, queryLst):
+                if type(queryLst) is str:
+                    return checkActivity(queryLst, activity)
+                if type(queryLst) is list:
+                    return reduce(
+                        lambda x, y: x or y,
+                        map(
+                            lambda x: findActivities(activity, x), 
+                            queryLst
+                        )
+                    )
+                if type(queryLst) is tuple:
+                    return reduce(
+                        lambda x, y: x and y,
+                        map(
+                            lambda x: findActivities(activity, x), 
+                            queryLst
+                        )
+                    )
+
+        #def findActivities(activity, queryLst):
+        #    if queryLst:
+        #        if type(queryLst) is str:
+        #            return filter ( 
+        #                lambda x :checkActivity(queryLst, x), \
+        #                activitiesLst
+        #            )
+        #        if type(queryLst) is list:
+        #            aux = map(
+        #                lambda x: findActivities(activitiesLst, x), 
+        #                queryLst
+        #            )
+        #            return [item for sublist in aux for item in sublist]
+        #        if type(queryLst) is tuple:
+        #            aux = findActivities(activitiesLst, queryLst[0]) 
+        #            return findActivities(aux, queryLst[1:])
+        #    return activitiesLst
+
         def getData(activitiesLst):
             res = []
             for activity in activitiesLst:
@@ -64,19 +105,24 @@ class Activities:
             return res
 
         queryLst = ast.literal_eval(queryStr)
-        # Activities list
-        # sock = urllib.urlopen("http://w10.bcn.es/APPS/asiasiacache/peticioXmlAsia?id=199") 
-        # activitiesXML = sock.read()                            
-        # sock.close()
-        # activitiesTree = ET.fromstring(activitiesXML)
+        #   Activities list
+        sock = urllib.urlopen("http://w10.bcn.es/APPS/asiasiacache/peticioXmlAsia?id=199") 
+        activitiesXML = sock.read()                            
+        sock.close()
+        activitiesTree = ET.fromstring(activitiesXML)
         
-        activitiesTree = ET.parse('data/activities.xml') # TESTING
-        
-        activitiesLst = activitiesTree.findall("./body/resultat/actes/acte")
-        
+        #activitiesTree = ET.parse('data/activities.xml') # TESTING
+
         # Apply query
-        activitiesLst = findActivities(activitiesLst, queryLst)
-        
+        t1 = time.clock()
+        activitiesLst = \
+            filter(
+                lambda x: findActivities(x, queryLst), 
+                activitiesTree.findall("./body/resultat/actes/acte")
+            )
+        t2 = time.clock()
+        print "Time to find activities: " + str(t2-t1)
+        print "</br>"
         self.activities = getData(activitiesLst)
 
 #def printActivities(activitiesLst):
