@@ -115,9 +115,9 @@ def findTransportation(lon, lat):
             st['stat'] = aux_bus
             st['lon'] = stat[4]
             st['lat'] = stat[5]
-            if stat[3] == 'Day buses' and checkBuses(day_buses, st):
+            if stat[3] == 'Day buses' and checkStations(day_buses, st):
                 day_buses.append(st)
-            if stat[3] == 'Night buses'  and checkBuses(night_buses, st):
+            if stat[3] == 'Night buses'  and checkStations(night_buses, st):
                 night_buses.append(st)
     ifile.close()
     #METRO
@@ -233,7 +233,7 @@ def main(argv):
     
     for activity in activities:
         activity['bikeStations'] = findStations(activity['loc']['x'], activity['loc']['y'])
-        activity['TMBStations'] = findTransportation(activity['loc']['x'], activity['loc']['y'])
+        # activity['TMBStations'] = findTransportation(activity['loc']['x'], activity['loc']['y'])
 
     print "Number of activities: " + str(len(activities))
     

@@ -19,48 +19,33 @@ class HTMLrender:
             return ""
 
     def  __printBikesStations(self, bikes):
-        for bike in bikes:
-            print '      <ul>'
-            print '      <li>'
-            print "Calle: " + self.__normaliza(bike['street'])
-            print '      </li>'
-            print '      <li>'
-            print "Num. Calle: " + self.__normaliza(bike['streetNumber'])
-            print '      </li>'
-            print '      <li>'
-            print "Disponibles: " + self.__normaliza(bike['bikes'])
-            print '      </li>'
-            print '      <li>'
-            print "Espacios: " + self.__normaliza(bike['slots'])
-            print '      </li>'
-            print '      <li>'
-            print "Distancia: " + self.__normaliza(bike['dist'])
-            print '      </li>'
-            print '      </ul>'
-    
-    def __printMTStations(self, stations):
-        for bike in bikes:
-            print '      <ul>'
-            print '      <li>'
-            print "Calle: " + self.__normaliza(bike['street'])
-            print '      </li>'
-            print '      <li>'
-            print "Num. Calle: " + self.__normaliza(bike['streetNumber'])
-            print '      </li>'
-            print '      <li>'
-            print "Disponibles: " + self.__normaliza(bike['bikes'])
-            print '      </li>'
-            print '      <li>'
-            print "Espacios: " + self.__normaliza(bike['slots'])
-            print '      </li>'
-            print '      <li>'
-            print "Distancia: " + self.__normaliza(bike['dist'])
-            print '      </li>'
-            print '      </ul>'
+        return "".join([
+            '''      <ul>
+                  <li>
+                    Calle: {%s}
+                  </li>'
+                  <li>
+                    Num. Calle: {%s}
+                  </li>
+                  <li>
+                    Disponibles: {%s}
+                  </li>
+                  <li>
+                    Espacios: {%s}
+                  </li>
+                  <li>
+                    Distancia: {%s}
+                  </li>
+                  </ul>
+            ''' % ( self.__normaliza(bike['street']),
+                    self.__normaliza(bike['streetNumber']),
+                    self.__normaliza(bike['bikes']), 
+                    self.__normaliza(bike['slots']),
+                    self.__normaliza(bike['dist']))
+            for bike in bikes])
 
     def printHTML(self, activities):
-        
-        print '<!doctype html>'
+        return '<!doctype html>'
         print '<html>'
         print '<head>'
         print '  <title>Python exercice for LP course</title>'
@@ -111,10 +96,10 @@ class HTMLrender:
             print self.__normaliza(act['loc']['pstCode'])
             print '      </td>'
             print '      <td>'
-            self.__printBikesStations(act['bikeStations']['freeSlots'])
+            print self.__printBikesStations(act['bikeStations']['freeSlots'])
             print '      </td>'
             print '      <td>'
-            self.__printBikesStations(act['bikeStations']['haveBikes'])
+            print self.__printBikesStations(act['bikeStations']['haveBikes'])
             print '      </td>'
             #print '      <td>'
             #printMTStations()
@@ -123,3 +108,7 @@ class HTMLrender:
         print '</table>'
         print '</body>'
         print '</html>'
+        
+        def printHTMLtoFile(self, activities, file):
+            f = open(file,"w")
+            f.write(self.printHTML(activities))
