@@ -93,13 +93,6 @@ def findStations(lat, lon):
     return {'haveBikes': haveBikes[0:5], 'freeSlots': freeSlots[0:5]}
 
 
-def checkStations(bus_lst, act_bus):
-    for b in bus_lst:
-        if act_bus['stat'] in b['stat'] and act_bus['dist'] > b['dist']:
-                return False
-    return True
-
-
 def findTransportation(lon, lat):
     day_buses = []
     night_buses = []
@@ -109,19 +102,19 @@ def findTransportation(lon, lat):
     reader = csv.reader(ifile, delimiter=';')
     reader.next()
     for stat in reader:
-        st = {}
+        st = {'tip': 'BUS'}
         dist = haversineDistance(
             float(lon), float(lat), float(stat[4]), float(stat[5])
         )
-        if dist <= 0.5:
+        if dist <= 500:
             aux_bus = re.split('-+', stat[6])[1:-1]
             st['dist'] = "{:.2f}".format(dist)
             st['stat'] = aux_bus
             st['lon'] = stat[4]
             st['lat'] = stat[5]
-            if stat[3] == 'Day buses' and checkStations(day_buses, st):
+            if stat[3] == 'Day buses':
                 day_buses.append(st)
-            if stat[3] == 'Night buses' and checkStations(night_buses, st):
+            if stat[3] == 'Night buses':
                 night_buses.append(st)
     ifile.close()
     # METRO
@@ -129,49 +122,41 @@ def findTransportation(lon, lat):
     reader = csv.reader(ifile, delimiter=';')
     reader.next()
     for stat in reader:
-        st = {}
+        st = {'tip': 'MET/TRAM'}
         dist = haversineDistance(
             float(lon), float(lat), float(stat[4]), float(stat[5])
         )
         if dist <= 500:
             st['dist'] = "{:.2f}".format(dist)
-            aux = re.findall('(T?L?\d)|(BLAU)', stat[6])
-            st['stat'] = filter(
-                lambda x: x != '',
-                [item for sublist in aux for item in sublist]
-            )
+            st['stat'] = re.search(
+                        '\(.+[0-9]+,?\)|TRAMVIA BLAU', stat[6]
+                    ).group(0).replace('(', '').replace(')', '').split(',')
             st['lon'] = stat[4]
             st['lat'] = stat[5]
-            if checkStations(metros, st):
-                metros.append(st)
+            metros.append(st)
     ifile.close()
 
     day_buses.sort(key=lambda s: float(s['dist']))
     night_buses.sort(key=lambda s: float(s['dist']))
     metros.sort(key=lambda s: float(s['dist']))
-    result = []
+
+    result_aux = []
     if day_buses:
-        result.append(day_buses[0])
+        result_aux.append(day_buses[0])
+        day_buses = day_buses[1:]
     if night_buses:
-        result.append(night_buses[0])
+        result_aux.append(night_buses[0])
+        night_buses = night_buses[1:]
     if metros:
-        result.append(metros[0])
-    day_buses = day_buses[1:]
-    night_buses = night_buses[1:]
-    metros = metros[1:]
-    for x in range(0, 8):
-        aux = [day_buses[0]['dist'], night_buses[0]['dist'], metros[0]['dist']]
-        m = min(enumerate(aux), key=itemgetter(1))[0]
-        if m == 0:
-            result.append(day_buses[0])
-            day_buses = day_buses[1:]
-        if m == 1:
-            result.append(night_buses[0])
-            night_buses = night_buses[1:]
-        if m == 2:
-            result.append(metros[0])
-            metros = metros[1:]
-    return result
+        result_aux.append(metros[0])
+        metros = metros[1:]
+    result = (
+        (metros[:10])+(night_buses[:10])+(day_buses[:10])
+    )
+    result.sort(key=lambda s: float(s['dist']))
+    r = result_aux+result[:10]
+    r.sort(key=lambda s: float(s['dist']))
+    return r
 
 
 def haversineDistance(x, y, xx, yy):
@@ -252,8 +237,8 @@ def main(argv):
     for activity in activities:
         activity['bikeStations'] = findStations(activity['loc']['x'],
                                                 activity['loc']['y'])
-        # activity['TMBStations'] = findTransportation(activity['loc']['x'],
-        #                                              activity['loc']['y'])
+        activity['TMBStations'] = findTransportation(activity['loc']['x'],
+                                                     activity['loc']['y'])
 
     print "Number of activities: " + str(len(activities))
 
